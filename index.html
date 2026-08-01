@@ -4,445 +4,434 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RISE: Single Static Radar-based Indoor Scene Understanding</title>
+  <meta name="description" content="RISE reconstructs indoor room layouts and detects objects from a single static mmWave radar by turning multipath reflections into geometric signal." />
+
+  <meta property="og:title" content="RISE: Single Static Radar-based Indoor Scene Understanding" />
+  <meta property="og:description" content="Layout reconstruction and object detection from one static mmWave radar. 16 cm Chamfer distance, 58% object IoU, 50,000-frame benchmark." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://rise-cvpr.github.io/" />
+  <meta property="og:image" content="https://rise-cvpr.github.io/static/images/teaser.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%230E6E6E' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%230E6E6E' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23C2571A'/%3E%3C/svg%3E" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- =================== HERO =================== -->
-  <header class="hero">
-    <div class="container">
-      <div class="venue-tag">arXiv &nbsp;·&nbsp; November 2025</div>
-      <h1 class="title">
-        <span class="rise">RISE</span>: Single Static Radar-based<br class="br-lg"/>Indoor Scene Understanding
-      </h1>
-      <div class="authors">
-        <span class="author">Kaichen Zhou</span><span class="sep">,</span>
-        <span class="author">Laura Dodds</span><span class="sep">,</span>
-        <span class="author">Sayed Saad Afzal</span><span class="sep">,</span>
-        <span class="author">Fadel Adib</span>
-      </div>
-      <div class="affil">MIT Media Lab</div>
+<!-- =================== NAV =================== -->
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <a class="nav-brand" href="#top">
+      <svg class="nav-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="16" cy="16" r="2.6" fill="var(--amber)"/>
+      </svg>
+      RISE
+    </a>
+    <div class="nav-links">
+      <a href="#abstract">Abstract</a>
+      <a href="#insight">Insight</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#dataset">Dataset</a>
+      <a href="#bibtex">BibTeX</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-sm btn-ghost" href="https://arxiv.org/abs/2511.14019" target="_blank" rel="noopener">Paper</a>
+      <a class="btn btn-sm btn-solid" href="https://github.com/kaichen-z/RISE" target="_blank" rel="noopener">Code</a>
+    </div>
+  </div>
+</nav>
 
-      <div class="hero-links">
-        <a class="pill pill-blue" href="https://arxiv.org/abs/2511.14019" target="_blank">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
-          Paper
-        </a>
-        <a class="pill pill-ghost" href="https://arxiv.org/pdf/2511.14019" target="_blank">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          PDF
-        </a>
-        <a class="pill pill-ghost" href="#" target="_blank">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-          Code <span class="soon">soon</span>
-        </a>
-        <a class="pill pill-ghost" href="#dataset">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-          Dataset
-        </a>
+<!-- =================== HERO =================== -->
+<header class="hero" id="top">
+  <div class="radar-bg" aria-hidden="true">
+    <span class="ring r1"></span><span class="ring r2"></span>
+    <span class="ring r3"></span><span class="ring r4"></span>
+    <span class="sweep"></span>
+  </div>
+
+  <div class="container hero-in">
+    <div class="tag">arXiv 2511.14019 &nbsp;·&nbsp; November 2025</div>
+
+    <h1 class="title">
+      <span class="wordmark">RISE</span>
+      <span class="subtitle">Single Static Radar-based <br class="br-lg" />Indoor Scene Understanding</span>
+    </h1>
+    <p class="lede">
+      One static mmWave radar. Full room layouts and object boxes &mdash;
+      including the parts the radar can never see directly.
+    </p>
+
+    <ul class="authors">
+      <li>Kaichen Zhou</li>
+      <li>Laura Dodds</li>
+      <li>Sayed Saad Afzal</li>
+      <li>Fadel Adib</li>
+    </ul>
+    <p class="affil">Signal Kinetics Group &nbsp;·&nbsp; MIT Media Lab</p>
+
+    <div class="hero-links">
+      <a class="btn btn-solid" href="https://arxiv.org/abs/2511.14019" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" class="ic"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Paper
+      </a>
+      <a class="btn btn-line" href="https://arxiv.org/pdf/2511.14019" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" class="ic"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF
+      </a>
+      <a class="btn btn-line" href="https://github.com/kaichen-z/RISE" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" class="ic"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        Code
+      </a>
+      <a class="btn btn-line" href="#dataset">
+        <svg viewBox="0 0 24 24" class="ic"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        Dataset
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- =================== TEASER =================== -->
+  <section class="teaser">
+    <div class="container">
+      <figure class="plate plate-lg">
+        <img src="static/images/teaser.webp" alt="RISE overview: conventional mmWave detection sees only a limited region, while RISE uses multipath to reconstruct the full layout and detect occluded objects." width="1800" loading="eager" />
+        <figcaption>
+          Conventional single-radar sensing <em>(left)</em> sees only the directly visible slice of a room.
+          RISE <em>(right)</em> treats wall reflections as extra viewpoints, recovering geometry and objects
+          in regions the direct path never reaches.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- =================== KEY NUMBERS =================== -->
+  <section class="band">
+    <div class="container">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-n">16<span class="u">cm</span></div>
+          <div class="stat-l">Layout Chamfer distance</div>
+          <div class="stat-s">60% lower than prior state of the art</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">58<span class="u">%</span></div>
+          <div class="stat-l">Object detection IoU</div>
+          <div class="stat-s">first object-level mmWave detection</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">1<span class="u">radar</span></div>
+          <div class="stat-l">Static, single sensor</div>
+          <div class="stat-s">no motion, no arrays of devices</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">50<span class="u">K</span></div>
+          <div class="stat-l">Annotated radar frames</div>
+          <div class="stat-s">100 real indoor trajectories</div>
+        </div>
       </div>
     </div>
-  </header>
+  </section>
 
-  <main>
-
-    <!-- =================== TEASER FIGURE =================== -->
-    <section class="teaser-section">
-      <div class="container">
-        <figure class="teaser-fig">
-          <img
-            src="https://arxiv.org/html/2511.14019v1/x1.png"
-            alt="RISE system overview: single static radar for indoor scene understanding"
-            loading="eager"
-          />
-          <figcaption>
-            <strong>RISE</strong> is the first single-radar system for object-level indoor scene
-            understanding. Using only a static mmWave radar, RISE reconstructs room layouts and
-            detects objects&mdash;even in occluded regions&mdash;by exploiting multipath reflections
-            as geometric cues.
-          </figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <!-- =================== ABSTRACT =================== -->
-    <section class="section" id="abstract">
-      <div class="container narrow">
-        <h2 class="sh">Abstract</h2>
-        <div class="abstract-box">
-          <p>
-            Indoor scene understanding is fundamental to numerous applications, yet existing approaches
-            rely on optical sensors that face challenges with occlusions and raise privacy concerns.
-            Millimeter-wave (mmWave) radar offers a compelling privacy-preserving alternative&mdash;it
-            can penetrate obstacles and operate regardless of lighting conditions. However, the
-            inherently low spatial resolution of radar and complex multipath propagation in indoor
-            environments make accurate scene understanding challenging.
-          </p>
-          <p>
-            We introduce <strong>RISE</strong>, a system that jointly performs indoor layout
-            reconstruction and object detection from a <em>single static</em> mmWave radar.
-            Our key insight is to <em>leverage</em> multipath reflections as geometric information
-            rather than suppress them as noise. RISE employs <strong>Bi-Angular Multipath
-            Enhancement (BAME)</strong>, which explicitly models both the Angle-of-Arrival (AoA) and
-            Angle-of-Departure (AoD) to recover secondary reflections and reveal hidden structures,
-            paired with a <strong>Sim2Real Hierarchical Diffusion (SRHD)</strong> framework that
-            transforms fragmented observations into complete scene representations.
-          </p>
-          <p>
-            We introduce the <strong>first large-scale radar dataset</strong> for this task
-            (50,000 frames across 100 real indoor trajectories). RISE achieves a
-            <strong>60% reduction in Chamfer Distance</strong> over prior work, reaching
-            <strong>16 cm accuracy</strong>, and delivers the first mmWave-based object detection
-            at <strong>58% IoU</strong>.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- =================== METRICS =================== -->
-    <section class="section section-dark" id="metrics">
-      <div class="container">
-        <div class="stat-row">
-          <div class="stat">
-            <div class="stat-n">60<span>%</span></div>
-            <div class="stat-l">Reduction in Chamfer Distance</div>
-            <div class="stat-s">vs. prior state-of-the-art</div>
-          </div>
-          <div class="stat-div"></div>
-          <div class="stat">
-            <div class="stat-n">16<span>cm</span></div>
-            <div class="stat-l">Layout Accuracy</div>
-            <div class="stat-s">room layout reconstruction</div>
-          </div>
-          <div class="stat-div"></div>
-          <div class="stat">
-            <div class="stat-n">58<span>%</span></div>
-            <div class="stat-l">Object Detection IoU</div>
-            <div class="stat-s">first mmWave-based detection</div>
-          </div>
-          <div class="stat-div"></div>
-          <div class="stat">
-            <div class="stat-n">50K</div>
-            <div class="stat-l">Dataset Frames</div>
-            <div class="stat-s">100 real indoor trajectories</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =================== MOTIVATION =================== -->
-    <section class="section" id="motivation">
-      <div class="container">
-        <h2 class="sh centered">The Multipath Problem — Turned Advantage</h2>
-        <p class="sub centered">
-          Conventional radar systems suppress multipath reflections (signals bouncing off walls)
-          as noise. RISE treats them as a rich geometric signal.
+  <!-- =================== ABSTRACT =================== -->
+  <section class="section" id="abstract">
+    <div class="container narrow">
+      <div class="eyebrow">Abstract</div>
+      <div class="prose">
+        <p>
+          Indoor scene understanding is fundamental to numerous applications, yet existing approaches
+          rely on optical sensors that struggle with occlusion and raise privacy concerns.
+          Millimeter-wave radar is a compelling privacy-preserving alternative &mdash; it penetrates
+          obstacles and works regardless of lighting. But its low spatial resolution and the complex
+          multipath propagation of indoor environments make accurate scene understanding hard.
         </p>
-        <figure class="fig">
-          <img
-            src="https://arxiv.org/html/2511.14019v1/x2.png"
-            alt="Multipath-induced ghost points in mmWave radar"
-          />
-          <figcaption>
-            <strong>Fig. 2 — Multipath-induced Ghosts.</strong> (a) Scenario where ghost points
-            appear due to wall reflections. (b) The corresponding XY heatmap showing spurious
-            detections. RISE inverts this effect to recover actual scene geometry.
-          </figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <!-- =================== METHOD =================== -->
-    <section class="section section-dark" id="method">
-      <div class="container">
-        <h2 class="sh centered">Method</h2>
-        <p class="sub centered">
-          RISE consists of two tightly integrated components that transform raw mmWave radar
-          signals into complete indoor scene representations.
+        <p>
+          We introduce <strong>RISE</strong>, a system that jointly performs indoor layout reconstruction
+          and object detection from a <em>single static</em> mmWave radar. Our key insight is to
+          <em>leverage</em> multipath reflections as geometric information rather than suppress them as
+          noise. RISE employs <strong>Bi-Angular Multipath Enhancement (BAME)</strong>, which explicitly
+          models both Angle-of-Arrival and Angle-of-Departure to recover secondary reflections and reveal
+          hidden structure, paired with a <strong>Sim2Real Hierarchical Diffusion (SRHD)</strong> framework
+          that turns fragmented observations into complete scene representations.
         </p>
+        <p>
+          We also introduce the first large-scale radar dataset for this task &mdash; 50,000 frames across
+          100 real indoor trajectories. RISE reduces Chamfer distance by <strong>60%</strong> over prior
+          work, reaching <strong>16&nbsp;cm</strong> accuracy, and delivers the first mmWave-based object
+          detection at <strong>58% IoU</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
 
-        <!-- Pipeline figure -->
-        <figure class="fig fig-wide">
-          <img
-            src="https://arxiv.org/html/2511.14019v1/x3.png"
-            alt="RISE pipeline diagram: BAME and SRHD stages"
-          />
+  <!-- =================== INSIGHT =================== -->
+  <section class="section section-alt" id="insight">
+    <div class="container">
+      <div class="head">
+        <div class="eyebrow">Key insight</div>
+        <h2>Multipath is not noise. It is a second viewpoint.</h2>
+        <p class="sub">
+          A signal that bounces off a wall before reaching an object arrives late and from the wrong
+          direction, producing a &ldquo;ghost&rdquo; that classical pipelines discard. Every ghost, however,
+          encodes the wall that created it &mdash; and a view of the scene from that wall.
+        </p>
+      </div>
+
+      <div class="split">
+        <figure class="plate">
+          <img src="static/images/ghosts.webp" alt="Multipath-induced ghost detections and the corresponding signal strength map." loading="lazy" />
           <figcaption>
-            <strong>Fig. 3 — RISE Pipeline.</strong> Raw mmWave radar signals are processed through
-            Bi-Angular Multipath Enhancement (BAME) for geometric recovery, followed by the
-            Sim2Real Hierarchical Diffusion (SRHD) model for complete scene reconstruction.
+            <strong>Multipath-induced ghosts.</strong> (a) Reflections off a wall create phantom targets.
+            (b) The signal-strength map shows the spurious peaks. RISE inverts this effect to recover the
+            true geometry.
           </figcaption>
         </figure>
-
-        <!-- Two method cards -->
-        <div class="method-grid">
-
-          <div class="mcard">
-            <div class="mcard-tag">Component 1</div>
-            <h3>Bi-Angular Multipath Enhancement (BAME)</h3>
-            <p>
-              Standard radar only measures the Angle-of-Arrival (AoA). BAME additionally
-              models the <strong>Angle-of-Departure (AoD)</strong>&mdash;the direction a
-              signal left the radar before reflecting. By jointly reasoning over both angles,
-              RISE pinpoints the exact wall or surface a signal bounced off, effectively
-              using reflections as virtual mirrors to see occluded regions.
-            </p>
-            <ul>
-              <li>Models AoA and AoD jointly per radar return</li>
-              <li>Recovers structures invisible to direct-path sensing</li>
-              <li>Converts multipath from noise into geometric signal</li>
-            </ul>
-            <figure class="mcard-fig">
-              <img
-                src="https://arxiv.org/html/2511.14019v1/x5.png"
-                alt="BAME visualization"
-              />
-              <figcaption>
-                BAME recovers ghost targets that cannot be found with conventional AoA-only processing.
-              </figcaption>
-            </figure>
+        <div class="split-text">
+          <div class="pt">
+            <span class="pt-k">Conventional</span>
+            <p>Ghosts are rejected as clutter. The scene collapses to whatever the direct path can reach &mdash; typically one wall and any object in clear line of sight.</p>
           </div>
-
-          <div class="mcard">
-            <div class="mcard-tag">Component 2</div>
-            <h3>Sim2Real Hierarchical Diffusion (SRHD)</h3>
-            <p>
-              Even after multipath recovery, radar observations remain sparse and incomplete.
-              SRHD is a <strong>diffusion-based generative model</strong> that progressively
-              denoises radar heatmaps into dense layout reconstructions and object detections.
-              A physics-based simulator generates abundant training data; domain adaptation
-              bridges the gap to the real world.
-            </p>
-            <ul>
-              <li>Two-stage hierarchical diffusion: layout then objects</li>
-              <li>Sim-to-real transfer reduces annotation burden</li>
-              <li>Joint output: room floorplan + object bounding boxes</li>
-            </ul>
-            <figure class="mcard-fig">
-              <img
-                src="https://arxiv.org/html/2511.14019v1/x6.png"
-                alt="Sim2Real Hierarchical Diffusion architecture"
-              />
-              <figcaption>
-                SRHD's two-stage architecture: first predicting layout structure, then
-                refining object-level detections.
-              </figcaption>
-            </figure>
+          <div class="pt pt-hi">
+            <span class="pt-k">RISE</span>
+            <p>Each ghost is assigned to the surface that produced it, then folded back to its true position. Occluded corners and objects behind furniture re-enter the reconstruction.</p>
           </div>
-
         </div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Multipath inversion geometry -->
-        <div class="inversion-row">
-          <div class="inversion-text">
-            <h3>Multipath Inversion</h3>
-            <p>
-              Given an apparent ghost target location, RISE computes the geometric relationship
-              between the ghost and the reflecting wall to recover the true object position.
-              This inversion is closed-form and uses the bi-angular measurements from BAME.
-            </p>
-          </div>
-          <figure class="inversion-fig">
-            <img
-              src="https://arxiv.org/html/2511.14019v1/x4.png"
-              alt="Multipath inversion geometry"
-            />
-            <figcaption>Geometric relationships used in multipath inversion.</figcaption>
+  <!-- =================== METHOD =================== -->
+  <section class="section" id="method">
+    <div class="container">
+      <div class="head">
+        <div class="eyebrow">Method</div>
+        <h2>From raw chirps to a complete scene</h2>
+        <p class="sub">
+          Two components in sequence: a signal-processing front end that recovers geometry from multipath,
+          and a hierarchical diffusion model that completes what the radar could not measure.
+        </p>
+      </div>
+
+      <figure class="plate plate-lg">
+        <img src="static/images/pipeline.webp" alt="RISE pipeline: BAME signal processing followed by Sim2Real Hierarchical Diffusion." loading="lazy" />
+        <figcaption><strong>System pipeline.</strong> Raw mmWave captures pass through BAME for geometric recovery, then through SRHD for scene completion.</figcaption>
+      </figure>
+
+      <ol class="stages">
+        <li><span class="sn">01</span>Range FFT</li>
+        <li><span class="sn">02</span>AoA / AoD FFT</li>
+        <li><span class="sn">03</span>3D CFAR</li>
+        <li><span class="sn">04</span>Ghost reintegration</li>
+        <li><span class="sn">05</span>Multipath inversion</li>
+        <li><span class="sn">06</span>Temporal accumulation</li>
+        <li><span class="sn">07</span>GMM + RANSAC</li>
+        <li><span class="sn">08</span>Layout diffusion</li>
+        <li><span class="sn">09</span>Object diffusion</li>
+      </ol>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-tag">Component 01</div>
+          <h3>Bi-Angular Multipath Enhancement</h3>
+          <p>
+            Standard radar measures only the Angle-of-Arrival. BAME additionally resolves the
+            <strong>Angle-of-Departure</strong> &mdash; the direction the signal left the array before it
+            bounced. Jointly reasoning over both angles identifies exactly which surface a return
+            reflected off, turning that surface into a virtual mirror onto occluded space.
+          </p>
+          <ul class="ticks">
+            <li>Joint AoA + AoD estimation per return</li>
+            <li>Closed-form inversion of ghosts to true positions</li>
+            <li>Recovers structure invisible to direct-path sensing</li>
+          </ul>
+          <figure class="plate plate-sm">
+            <img src="static/images/bame.webp" alt="BAME recovers ghost targets missed by conventional AoA-only processing." loading="lazy" />
+            <figcaption>BAME recovers returns that AoA-only processing cannot separate.</figcaption>
           </figure>
-        </div>
+        </article>
 
-      </div>
-    </section>
-
-    <!-- =================== RESULTS =================== -->
-    <section class="section" id="results">
-      <div class="container">
-        <h2 class="sh centered">Results</h2>
-        <p class="sub centered">
-          RISE outperforms prior work across all metrics, evaluated on 100 real indoor trajectories.
-        </p>
-
-        <figure class="fig fig-wide">
-          <img
-            src="https://arxiv.org/html/2511.14019v1/x7.png"
-            alt="Wall reconstruction across 100 trajectories"
-          />
-          <figcaption>
-            <strong>Fig. 7 — Wall Reconstruction Across 100 Trajectories.</strong>
-            Comparison of RISE and the baseline (EMT) over 100 real-world trajectories, showing
-            consistent improvements in layout accuracy.
-          </figcaption>
-        </figure>
-
-        <figure class="fig fig-wide">
-          <img
-            src="https://arxiv.org/html/2511.14019v1/x8.png"
-            alt="Qualitative comparison between RISE and baseline"
-          />
-          <figcaption>
-            <strong>Fig. 8 — Qualitative Comparison.</strong> The first column shows RGB
-            reference images. RISE (right) produces significantly more accurate layout
-            reconstructions and object detections compared to the EMT baseline (middle).
-          </figcaption>
-        </figure>
-
-        <figure class="fig fig-wide">
-          <img
-            src="https://arxiv.org/html/2511.14019v1/x9.png"
-            alt="Results across varying trajectory lengths"
-          />
-          <figcaption>
-            <strong>Fig. 9 — Varying Trajectory Lengths.</strong> RISE maintains strong
-            performance across different observation window lengths, demonstrating robustness
-            to deployment constraints.
-          </figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <!-- =================== DATASET =================== -->
-    <section class="section section-dark" id="dataset">
-      <div class="container">
-        <h2 class="sh centered">Dataset</h2>
-        <p class="sub centered">
-          The first large-scale benchmark for radar-based indoor scene understanding.
-        </p>
-
-        <div class="ds-stats">
-          <div class="ds-stat">
-            <div class="ds-n">50,000</div>
-            <div class="ds-l">Radar Frames</div>
-          </div>
-          <div class="ds-stat">
-            <div class="ds-n">100</div>
-            <div class="ds-l">Indoor Trajectories</div>
-          </div>
-          <div class="ds-stat">
-            <div class="ds-n">1st</div>
-            <div class="ds-l">Dataset of Its Kind</div>
-          </div>
-        </div>
-
-        <figure class="fig">
-          <img
-            src="https://arxiv.org/html/2511.14019v1/x11.png"
-            alt="Simulator and data augmentation illustration"
-          />
-          <figcaption>
-            <strong>Fig. 11 — Simulator & Data Augmentation.</strong> Top row: ground truth
-            from the physics-based simulator. Bottom row: augmented training data used to
-            bridge the sim-to-real gap in SRHD.
-          </figcaption>
-        </figure>
-
-        <div class="ds-desc">
+        <article class="card">
+          <div class="card-tag">Component 02</div>
+          <h3>Sim2Real Hierarchical Diffusion</h3>
           <p>
-            The dataset covers diverse indoor environments (offices, living rooms, corridors)
-            with paired ground truth for room layout and object locations. Each trajectory
-            provides a sequence of radar snapshots from a single static mmWave sensor,
-            annotated with floorplan geometry and object bounding boxes.
+            Even after multipath recovery, radar observations stay sparse. SRHD is a
+            <strong>diffusion model</strong> that denoises accumulated radar evidence into a dense scene:
+            room layout first, then object boxes conditioned on it. A physics-based simulator supplies the
+            training data, and domain adaptation closes the gap to real captures.
           </p>
-          <a class="pill pill-blue" style="margin-top:16px;display:inline-flex;" href="https://arxiv.org/abs/2511.14019" target="_blank">
-            View Paper for Dataset Access
-          </a>
-        </div>
+          <ul class="ticks">
+            <li>Hierarchical two-stage generation: layout, then objects</li>
+            <li>Simulator-driven training, no large real annotation burden</li>
+            <li>Joint output: floorplan geometry + object bounding boxes</li>
+          </ul>
+          <figure class="plate plate-sm">
+            <img src="static/images/srhd.webp" alt="Two-stage architecture of the Sim2Real Hierarchical Diffusion model." loading="lazy" />
+            <figcaption>SRHD conditions object generation on the layout it has already produced.</figcaption>
+          </figure>
+        </article>
       </div>
-    </section>
 
-    <!-- =================== WHY RADAR =================== -->
-    <section class="section" id="comparison">
-      <div class="container">
-        <h2 class="sh centered">Why mmWave Radar?</h2>
-        <p class="sub centered">
-          Radar offers unique advantages over optical sensors for privacy-sensitive,
-          challenging-condition deployments.
-        </p>
-        <div class="table-wrap">
-          <table class="comp-table">
-            <thead>
-              <tr>
-                <th>Capability</th>
-                <th>RGB Camera</th>
-                <th>LiDAR</th>
-                <th class="ours-col">mmWave Radar (RISE)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Low-light operation</td>
-                <td class="bad">✗</td>
-                <td class="ok">✓</td>
-                <td class="good ours-col">✓</td>
-              </tr>
-              <tr>
-                <td>Privacy preserving</td>
-                <td class="bad">✗</td>
-                <td class="bad">✗</td>
-                <td class="good ours-col">✓</td>
-              </tr>
-              <tr>
-                <td>Penetrates obstacles</td>
-                <td class="bad">✗</td>
-                <td class="bad">✗</td>
-                <td class="good ours-col">✓</td>
-              </tr>
-              <tr>
-                <td>Low hardware cost</td>
-                <td class="good">✓</td>
-                <td class="bad">✗</td>
-                <td class="good ours-col">✓</td>
-              </tr>
-              <tr>
-                <td>Layout reconstruction</td>
-                <td class="mid">Limited</td>
-                <td class="mid">Limited</td>
-                <td class="good ours-col">✓ (RISE)</td>
-              </tr>
-              <tr>
-                <td>Object detection</td>
-                <td class="good">✓</td>
-                <td class="good">✓</td>
-                <td class="good ours-col">✓ (RISE — first)</td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="feature">
+        <div class="feature-text">
+          <h3>Multipath inversion</h3>
+          <p>
+            Given a ghost detection and the bi-angular measurement that produced it, RISE solves for the
+            reflecting plane and mirrors the detection back across it. The inversion is closed-form:
+            no learned component, no iterative search &mdash; which is what keeps it reliable enough to
+            feed the diffusion stage.
+          </p>
         </div>
+        <figure class="plate plate-sm feature-fig">
+          <img src="static/images/inversion.webp" alt="Geometric relationships used in multipath inversion." loading="lazy" />
+          <figcaption>The geometry relating a ghost, the reflector, and the true target.</figcaption>
+        </figure>
       </div>
-    </section>
-
-    <!-- =================== BIBTEX =================== -->
-    <section class="section section-dark" id="bibtex">
-      <div class="container narrow">
-        <h2 class="sh centered">BibTeX</h2>
-        <div class="bibtex-wrap">
-          <pre class="bibtex"><code id="bibtex-text">@article{zhou2025rise,
-  title     = {RISE: Single Static Radar-based Indoor Scene Understanding},
-  author    = {Zhou, Kaichen and Dodds, Laura and Afzal, Sayed Saad and Adib, Fadel},
-  journal   = {arXiv preprint arXiv:2511.14019},
-  year      = {2025}
-}</code></pre>
-          <button class="copy-btn" id="copy-btn" onclick="copyBib()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy
-          </button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="footer">
-    <div class="container">
-      <p>
-        <strong>RISE</strong> &nbsp;·&nbsp; MIT Media Lab &nbsp;·&nbsp; 2025 &nbsp;·&nbsp;
-        <a href="https://arxiv.org/abs/2511.14019" target="_blank">arXiv:2511.14019</a>
-      </p>
     </div>
-  </footer>
+  </section>
 
-  <script src="main.js"></script>
+  <!-- =================== RESULTS =================== -->
+  <section class="section section-alt" id="results">
+    <div class="container">
+      <div class="head">
+        <div class="eyebrow">Results</div>
+        <h2>Evaluated on 100 real indoor trajectories</h2>
+        <p class="sub">
+          RISE improves over the prior mmWave layout baseline on every trajectory, and adds object-level
+          detection that no previous single-radar system provides.
+        </p>
+      </div>
+
+      <figure class="plate plate-lg">
+        <img src="static/images/walls.webp" alt="Wall reconstruction error of RISE versus the prior mmWave layout baseline across 100 trajectories." loading="lazy" />
+        <figcaption><strong>Layout reconstruction across 100 trajectories.</strong> RISE versus the prior mmWave layout baseline, showing consistent gains rather than a few favourable scenes.</figcaption>
+      </figure>
+
+      <figure class="plate plate-lg">
+        <img src="static/images/qualitative.webp" alt="Qualitative comparison: RGB reference, prior baseline, and RISE reconstructions." loading="lazy" />
+        <figcaption><strong>Qualitative comparison.</strong> RGB reference (left), prior baseline (middle), RISE (right). RISE closes walls that the baseline leaves fragmented and places objects the baseline misses entirely.</figcaption>
+      </figure>
+
+      <figure class="plate plate-lg">
+        <img src="static/images/trajlen.webp" alt="Performance of RISE across varying observation trajectory lengths." loading="lazy" />
+        <figcaption><strong>Varying trajectory length.</strong> Accuracy degrades gracefully as the observation window shortens, which matters for real deployments with limited dwell time.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- =================== DATASET =================== -->
+  <section class="section" id="dataset">
+    <div class="container">
+      <div class="head">
+        <div class="eyebrow">Dataset</div>
+        <h2>The first large-scale benchmark for this task</h2>
+        <p class="sub">
+          Paired radar captures and ground-truth scene annotations across offices, living rooms and
+          corridors &mdash; plus the physics-based simulator used to pretrain SRHD.
+        </p>
+      </div>
+
+      <div class="ds-grid">
+        <div class="ds-card"><div class="ds-n">50,000</div><div class="ds-l">radar frames</div></div>
+        <div class="ds-card"><div class="ds-n">100</div><div class="ds-l">real indoor trajectories</div></div>
+        <div class="ds-card"><div class="ds-n">2</div><div class="ds-l">annotation types: layout + object boxes</div></div>
+      </div>
+
+      <figure class="plate">
+        <img src="static/images/simulator.webp" alt="Simulator ground truth and the augmented training data derived from it." loading="lazy" />
+        <figcaption>
+          <strong>Simulator and augmentation.</strong> Top: ground truth from the physics-based simulator.
+          Bottom: augmented samples used to bridge the sim-to-real gap during SRHD training.
+        </figcaption>
+      </figure>
+
+      <div class="cta">
+        <p>Code, trained models and dataset release are hosted on GitHub.</p>
+        <div class="cta-btns">
+          <a class="btn btn-solid" href="https://github.com/kaichen-z/RISE" target="_blank" rel="noopener">Get the code</a>
+          <a class="btn btn-line" href="https://arxiv.org/abs/2511.14019" target="_blank" rel="noopener">Read the paper</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== WHY RADAR =================== -->
+  <section class="section section-alt" id="why">
+    <div class="container narrow-wide">
+      <div class="head">
+        <div class="eyebrow">Why mmWave</div>
+        <h2>What radar buys you</h2>
+        <p class="sub">Trade-offs against the optical sensors normally used for indoor scene understanding.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th>RGB camera</th>
+              <th>LiDAR</th>
+              <th class="ours">mmWave radar (RISE)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Works in the dark</td><td class="no">No</td><td class="yes">Yes</td><td class="ours yes">Yes</td></tr>
+            <tr><td>Privacy preserving</td><td class="no">No</td><td class="no">No</td><td class="ours yes">Yes</td></tr>
+            <tr><td>Sees through obstacles</td><td class="no">No</td><td class="no">No</td><td class="ours yes">Yes</td></tr>
+            <tr><td>Low hardware cost</td><td class="yes">Yes</td><td class="no">No</td><td class="ours yes">Yes</td></tr>
+            <tr><td>Layout reconstruction</td><td class="mid">Partial</td><td class="yes">Yes</td><td class="ours yes">Yes</td></tr>
+            <tr><td>Object detection</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="ours yes">Yes &mdash; first for radar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== BIBTEX =================== -->
+  <section class="section" id="bibtex">
+    <div class="container narrow">
+      <div class="eyebrow">BibTeX</div>
+      <div class="bib-wrap">
+        <pre class="bib"><code id="bibtex-text">@article{zhou2025rise,
+  title   = {RISE: Single Static Radar-based Indoor Scene Understanding},
+  author  = {Zhou, Kaichen and Dodds, Laura and Afzal, Sayed Saad and Adib, Fadel},
+  journal = {arXiv preprint arXiv:2511.14019},
+  year    = {2025}
+}</code></pre>
+        <button class="copy" id="copy-btn" type="button">
+          <svg viewBox="0 0 24 24" class="ic"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container foot-in">
+    <div class="foot-brand">
+      <svg class="nav-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="16" cy="16" r="2.6" fill="var(--amber)"/>
+      </svg>
+      <span>RISE &middot; Signal Kinetics, MIT Media Lab</span>
+    </div>
+    <div class="foot-links">
+      <a href="https://arxiv.org/abs/2511.14019" target="_blank" rel="noopener">arXiv:2511.14019</a>
+      <a href="https://github.com/kaichen-z/RISE" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.media.mit.edu/groups/signal-kinetics/overview/" target="_blank" rel="noopener">Signal Kinetics</a>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js"></script>
 </body>
 </html>
